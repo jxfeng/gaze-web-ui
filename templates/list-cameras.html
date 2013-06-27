@@ -1,0 +1,39 @@
+{% extends "console-base.html" %}
+
+{% block consolecontent %}
+{% if cameras==None %}
+<div class="alert alert-block">
+  <h4>Warning!</h4>
+  No cameras found!
+</div>
+{% endif %}
+<!-- LIST OF CAMERAS -->
+{% if cameras != None %}
+<div>
+  <h3>Cameras</h3>
+  <hr/>
+  <table class="table table-bordered table-striped">
+    <tr>
+      <th>Name</th>
+      <th>Location</th>
+      <th>Last update</th>
+      <th>Watch</th>
+    </tr>
+    {% for c in cameras %}
+    <tr>
+      <td>{{c.cameraId|e}}</td>
+      <td>{{c.cameraLocation|e}}</td>
+      <td>Some time ago</td>
+      <td><a href="{{ url_for('view_camera', camera_id=c.cameraId) }}" class="btn btn-primary">Watch!</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  <ul class="pager">
+    <!-- <li class="previous"><a href="{{ url_for('list_cameras') }}?start={{ prev }}">&larr; Previous</a></li> -->
+    <li class="next"><a href="{{ url_for('list_cameras') }}?start={{ next }}">Next &rarr;</a></li>
+  </ul>
+</div>
+{% endif %}
+{% endblock %}
+
+

@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en">
+  <head>
+    <title>Gaze: simple video surveillance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <style type="text/css">
+      body {      
+      padding-top: 20px;
+      padding-bottom: 40px;
+      }
+      /* Custom container */
+      .container-narrow {
+      margin: 0 auto;
+      max-width: 800px;
+      }
+      .container-narrow > hr {
+      margin: 30px 0;
+      }
+      /* Main marketing message and sign up button */
+      .jumbotron {
+      margin: 60px 0;
+      text-align: center;
+      }
+      .jumbotron h1 {
+      font-size: 72px;
+      line-height: 1;
+      }
+      .jumbotron .btn {
+      font-size: 21px;
+      padding: 14px 24px;
+      }
+      /* Supporting marketing content */
+      .marketing {
+      margin: 60px 0;
+      }
+      .marketing p + h4 {
+      margin-top: 28px;
+      }
+      {% block css %}{% endblock %}
+    </style>
+    <div class="container-narrow">
+
+      <!-- MASTHEAD -->
+      {% block masthead %}
+      <div class="masthead">
+	<ul class="nav nav-pills pull-right">
+	  {% for mkey, mval in menu.iteritems() %}
+	  {% if mval.active %}
+	  <li class="active"><a a href="#">{{ mval.name }}</a></li>
+	  {% else %}
+	  <li><a href="{{ mval.url|e }}">{{ mval.name }}</a></li>
+	  {% endif %}
+	  {% endfor %}
+	</ul>
+	<h3 class="muted">Gaze</h3>
+      </div>
+      <hr/>
+      {% endblock %}
+
+      <!-- CONTENT -->
+      {% block content %} {% endblock %}
+
+      <!-- FOOTER -->
+      <div class="footer">
+        <p>&copy; Gaze 2013</p>
+      </div>
+
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+<!-- MASTHEAD -->
+{% block masthead %}
+{{ super() }}
+{% endblock %}
+
+<!-- CONTENT -->
+{% block content %}
+<div class="container-fluid">
+  <!-- SIDEBAR -->
+  <div class="row-fluid">
+    <div class="span3">
+      <div class="well sidebar-nav">
+        <ul class="nav nav-list">
+	  <li class="nav-header">Camera</li>
+	  <li><a href="add-camera">Add</a></li>
+	  <li><a href="list-camera">List</a></li>
+	  <li class="nav-header">Alerts</li>
+	  <li><a href="#">Add</a></li>
+	  <li><a href="#">List</a></li>
+	  <li><a href="#">Events</a></li>
+	  <li class="nav-header">Account</li>
+	  <li><a href="#">Settings</a></li>
+	  <li><a href="logout">Logout</a></li>
+        </ul>
+      </div><!--/.well -->
+    </div><!--/span-->
+    <div class="span9">
+      {% block consolecontent %}{% endblock %}
+    </div> <!-- /span9 -->
+  </div><!-- /container-fluid -->
+{% endblock %}
+
+
