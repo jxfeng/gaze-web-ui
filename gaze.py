@@ -14,13 +14,14 @@ class gaze:
             self.ROOT_URL = root_url
         else:
             self.ROOT_URL = 'http://gazeapi.elasticbeanstalk.com'
+        self.session = requests.Session()
     def LOG(self, msg):
         ts = datetime.now()
         self.LOGFILE.write('%(ts)25s %(m)s\n' % {'ts':ts, 'm':msg})
     def GET(self, path, headers, params):
         url = self.ROOT_URL + path
         self.LOG('REQUEST: GET: %(p)s' % {'p':path})
-        res = requests.get(url, headers=headers, params=params)
+        res = self.session.get(url, headers=headers, params=params)
         if(res == None or res.status_code != requests.codes.ok):
             self.LOG('REPLY: ERROR: GET: %(p)s RESPONSE: %(m)s' % {'p':path, 'm':res})
             return None
@@ -32,17 +33,18 @@ class gaze:
             except ValueError:
                 json_data = None
             print res.headers
+            res.stream = False
             return {'status':res.status_code, 'response':res, 'json': json_data}
     def POST(self, path, headers, params, json_data=None, file_data=None):
         url = self.ROOT_URL + path
         self.LOG('REQUEST: POST: %(p)s' % {'p':path})
         res = None
         if(json_data != None and file_data == None):
-            res = requests.post(url, headers=headers, params=params, data=json.dumps(json_data))
+            res = self.session.post(url, headers=headers, params=params, data=json.dumps(json_data))
         elif(json_data == None and file_data != None):
-            res = requests.post(url, headers=headers, params=params, files=file_data)
+            res = self.session.post(url, headers=headers, params=params, files=file_data)
         else:
-            res = requests.post(url, headers=headers, params=params)
+            res = self.session.post(url, headers=headers, params=params)
         if(res == None or res.status_code != requests.codes.ok):
             self.LOG('REPLY: ERROR: POST: %(p)s MSG: %(m)s' % {'p':path, 'm':res})
             return None
@@ -53,6 +55,7 @@ class gaze:
                 json_data = res.json()
             except ValueError:
                 json_data = None
+            res.stream = False
             return {'status':res.status_code, 'response':res, 'json': json_data}
     def create_user(self, username, email, password):
         data = {'userHandle':username, 'emailAddresss':email, 'password': password}

@@ -12,7 +12,7 @@ import subprocess
 import gaze
 
 GAZE_URL='http://gazeapi.elasticbeanstalk.com'
-NUM_THREADS = 5
+NUM_THREADS = 100
 QUEUE_SIZE = NUM_THREADS * 5
 FRAMES_PER_SEC=5.0
 USERNAME='testuser'
@@ -38,12 +38,20 @@ def thread_upload_image(tid, gz, delay=0.01):
             queue_lock.release()
             ts=str(int(time.time() * 1000))
             filename=ts + '.jpg'
+            # Create new image
+            ts_img_create_start=time.time()
             subprocess.call(['convert', '-pointsize', '48', '-gravity', 'center', '-size', '640x480', \
                                  'xc:white', '+noise', 'Random', '-annotate', '0x0+0+0',\
                                  ts, filename])
-            img=open(filename, 'rb').read()            
+            img=open(filename, 'rb').read()
+            ts_img_create_end=time.time()
+            # Upload image
+            ts_img_upload_start=time.time()
             gz.upload_image(sid, USERNAME, CAMERA, ts, 'image/jpeg', filename, img)
+            ts_img_upload_end=time.time()            
             os.remove(filename)
+            # Print stats
+            print 'TIME: Create: %(c)10.3f Upload: %(u)10.3f' % {'c':(ts_img_create_end-ts_img_create_start), 'u':(ts_img_upload_end-ts_img_upload_start)}
             print 'Uploaded image', ts
             done = True
         else:
