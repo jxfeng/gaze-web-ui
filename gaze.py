@@ -14,13 +14,23 @@ class gaze:
             self.ROOT_URL = root_url
         else:
             self.ROOT_URL = 'http://gazeapi.elasticbeanstalk.com'
-        self.session = requests.Session()
+        self.session = None
+        self.session_num_requests = 0
     def LOG(self, msg):
         ts = datetime.now()
         self.LOGFILE.write('%(ts)25s %(m)s\n' % {'ts':ts, 'm':msg})
+    def __SESSION(self):
+        if(self.session == None or self.session_num_requests > 10):
+            if(self.session != None):
+                self.session.close()
+                self.session = None
+            self.session = requests.Session()
+            self.session_num_requests = 0
+        self.session_num_requests += 1
     def GET(self, path, headers, params):
         url = self.ROOT_URL + path
         self.LOG('REQUEST: GET: %(p)s' % {'p':path})
+        self.__SESSION()
         res = self.session.get(url, headers=headers, params=params)
         if(res == None or res.status_code != requests.codes.ok):
             self.LOG('REPLY: ERROR: GET: %(p)s RESPONSE: %(m)s' % {'p':path, 'm':res})
@@ -32,12 +42,13 @@ class gaze:
                 json_data = res.json()
             except ValueError:
                 json_data = None
-            print res.headers
+            #print res.headers
             res.stream = False
             return {'status':res.status_code, 'response':res, 'json': json_data}
     def POST(self, path, headers, params, json_data=None, file_data=None):
         url = self.ROOT_URL + path
         self.LOG('REQUEST: POST: %(p)s' % {'p':path})
+        self.__SESSION()
         res = None
         if(json_data != None and file_data == None):
             res = self.session.post(url, headers=headers, params=params, data=json.dumps(json_data))
@@ -57,6 +68,16 @@ class gaze:
                 json_data = None
             res.stream = False
             return {'status':res.status_code, 'response':res, 'json': json_data}
+    def health_check(self):
+        headers = {'Accepts': 'application/json'}
+        ep = '/healthcheck'
+        res = self.GET(ep, headers, None)
+        if(res == None or res['status'] != requests.codes.ok):
+            self.LOG('HEALTH-CHECK: FAILED: ')
+            return None
+        assert(res != None and res['status'] == requests.codes.ok)
+        stat = res['json']
+        return stat
     def create_user(self, username, email, password):
         data = {'userHandle':username, 'emailAddresss':email, 'password': password}
         headers = {'Content-type': 'application/json', 'Accepts': 'application/json'}
