@@ -14,15 +14,15 @@
       <div class="well sidebar-nav">
         <ul class="nav nav-list">
 	  <li class="nav-header">Camera</li>
-	  <li><a href="add-camera">Add</a></li>
-	  <li><a href="list-camera">List</a></li>
+	  <li><a href="#">Add</a></li>
+	  <li><a href="{{ url_for('list_cameras') }}">List</a></li>
 	  <li class="nav-header">Alerts</li>
 	  <li><a href="#">Add</a></li>
 	  <li><a href="#">List</a></li>
 	  <li><a href="#">Events</a></li>
 	  <li class="nav-header">Account</li>
 	  <li><a href="#">Settings</a></li>
-	  <li><a href="logout">Logout</a></li>
+	  <li><a href="{{ url_for('logout') }}">Logout</a></li>
         </ul>
       </div><!--/.well -->
     </div><!--/span-->

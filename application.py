@@ -88,10 +88,25 @@ def view_camera(camera_id):
         user_id = session['gaze-session']['userId']
         cam = g.gaze_instance.get_camera(session_id, camera_id)
         print 'Camera', cam
-        img_url = url_for('view_image', camera_id=camera_id, ts=cam['lastImageTimestamp'])
+        img_url = url_for('view_latest_image', camera_id=camera_id)
         return render_template('view-image.html', menu=build_menu('console'), camera=cam, img_url=img_url)
 
-@app.route('/view-image/<camera_id>/<ts>.jpg')
+@app.route('/view-image/<camera_id>/latest.jpg')
+def view_latest_image(camera_id):
+    if(session.has_key('gaze-session') == False or session['gaze-session'] == None):
+        return redirect(url_for('login'))
+    else:
+        session_id = session['gaze-session']['sessionId']
+        user_id = session['gaze-session']['userId']
+        cam = g.gaze_instance.get_camera(session_id, camera_id)
+        blb = g.gaze_instance.get_blob(session_id, user_id, camera_id, cam['lastImageTimestamp'])
+        if(blb == None or len(blb) == 0):
+            abort(404)
+        response = make_response(blb)
+        response.headers['Content-Type'] = 'image/jpeg'
+        return response
+
+@app.route('/view-image/<camera_id>/by-time/<ts>.jpg')
 def view_image(camera_id, ts):
     if(session.has_key('gaze-session') == False or session['gaze-session'] == None):
         return redirect(url_for('login'))

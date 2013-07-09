@@ -4,7 +4,12 @@
 <div>
   <h3>Camera - {{ camera.cameraId }}</h3>
   <tr/>
-  <img src="{{ img_url }}" class="img-polaroid">
+  <script type="text/javascript">
+    setInterval(function(){
+    $("#camimg").attr("src", "{{ img_url }}?" + new Date().getTime());
+    },1000);
+  </script>
+  <img src="{{ img_url }}" id="camimg" class="img-polaroid">
 </div>
 {% endblock %}
 

@@ -116,8 +116,8 @@ def get_random_image(single_image, state):
         ts = 'TIME: ' + str(time.time())
         cv2.putText(img, ts, blp, cv.CV_FONT_HERSHEY_TRIPLEX, 1, (0,0,0))
         (retval, img) = cv2.imencode('.jpg',img)
-        write_image_to_file('temp.jpg', img)
-        img = open('temp.jpg', 'rb').read()
+        write_image_to_file('/tmp/temp.jpg', img)
+        img = open('/tmp/temp.jpg', 'rb').read()
         state['img'] = img
         return (state, state['img'])
 
@@ -142,8 +142,8 @@ def get_webcam_image(single_image, state):
         # Take a shot
         retval, img = camera.read()
         (retval, img)=cv2.imencode('.jpg', img)
-        write_image_to_file('temp.jpg', img)
-        img = open('temp.jpg', 'rb').read()
+        write_image_to_file('/tmp/temp.jpg', img)
+        img = open('/tmp/temp.jpg', 'rb').read()
         state['img'] = img
         return (state, state['img'])
 
