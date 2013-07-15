@@ -16,19 +16,13 @@ g = gaze.gaze(hostname)
 s = g.login(username, password)
 sid=s['sessionId']
 
-# Upload image
-ts=0
-for t in range(1,25):
-    #ts=str(int(time.time() * 1000))
-    ts=t*1000000000
-    blob=open('vid0.jpg','rb').read()
-    img = g.upload_image(sid, username, camera, ts, 'image/jpeg', 'vid0.jpg', blob)
-    print 'Image', img
-
-
-# Commit it
-cm = g.commit_image(sid, username, camera, ts)
-print 'Camera', cm
+# Iterate and change images
+li = g.list_images(sid, username, camera)
+for i in li:
+    ts = i['imageTimestamp']
+    blob = g.get_blob(sid, username, camera, ts)
+    iv = g.upload_image(sid, username, camera, ts, 'image/jpeg', 'blob.jpg', blob, variation='RT_FEATURE_DETECTED')
+    print 'Image', iv
 
 # Logout
 g.logout(s['sessionId'])

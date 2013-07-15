@@ -16,7 +16,7 @@ import random
 import gaze
 
 # Global parameters
-GAZE_URL='http://gazeapi.elasticbeanstalk.com'
+GAZE_URL='http://localhost:8080/gaze-web-app' #'http://gazeapi.elasticbeanstalk.com'
 NUM_THREADS = 25
 QUEUE_SIZE = NUM_THREADS * 5
 RAMP_FRAMES=25
@@ -148,7 +148,7 @@ def get_webcam_image(single_image, state):
         return (state, state['img'])
 
 # Image upload functions
-def thread_upload_image(tid, gz, task_queue, queue_lock, stats, stats_lock, delay=0.01):
+def thread_upload_image(tid, gz, task_queue, done_db, queue_lock, stats, stats_lock, delay=0.01):
     done = False
     try:
         s=gz.login(USERNAME, PASSWORD)
@@ -169,10 +169,15 @@ def thread_upload_image(tid, gz, task_queue, queue_lock, stats, stats_lock, dela
                 holding_lock = False
                 # Upload image
                 ts_img_upload_start=time.time()
+                #time.sleep(random.random()/10.0)
                 #gz.health_check()
                 gz.upload_image(sid, USERNAME, CAMERA, tsk['ts'], 'image/jpeg', tsk['filename'], tsk['data'])
                 #gz.get_camera(sid, CAMERA)
                 ts_img_upload_end=time.time()            
+                # Record completion
+                queue_lock.acquire()
+                done_db[tsk['id']] = tsk['ts']
+                queue_lock.release()
                 # Update stats
                 stats_lock.acquire()
                 stats['num_dequeues'] = stats['num_dequeues'] + 1
@@ -201,15 +206,17 @@ def main(username=USERNAME, password=PASSWORD, camera=CAMERA, \
     stats={'num_enqueues':0, 'num_dequeues':0, 'num_uploads':0, 'num_imgs': 0, 'total_img_time':0, 'total_upload_time':0}
     threads=dict()
     task_queue = Queue.Queue(QUEUE_SIZE)
+    done_db = dict()
     queue_lock = threading.Lock()
     stats_lock = threading.Lock()
     last_stats=None
     last_stats_print_time=time.time()
     num_images=0
+    main_gz=gaze.gaze(GAZE_URL)
     # 1. Create threads
     for tid in range(0, NUM_THREADS):
         gz = gaze.gaze(GAZE_URL)
-        thd = thread.start_new_thread(thread_upload_image, (tid, gz, task_queue, queue_lock, stats, stats_lock))
+        thd = thread.start_new_thread(thread_upload_image, (tid, gz, task_queue, done_db, queue_lock, stats, stats_lock))
         threads[tid] = thd
     # 2. Create and load images in a loop
     while(num_images < MAX_IMAGES):
@@ -223,7 +230,7 @@ def main(username=USERNAME, password=PASSWORD, camera=CAMERA, \
             return None
         ts=str(int(time.time() * 1000))
         filename=ts + '.jpg'
-        tsk = {'ts':ts, 'filename':filename, 'data':img}
+        tsk = {'ts':ts, 'id':num_images, 'filename':filename, 'data':img}
         ts_img_create_stop = time.time()
         # 2.2 Put into queue
         did_put=False
@@ -232,7 +239,26 @@ def main(username=USERNAME, password=PASSWORD, camera=CAMERA, \
             task_queue.put(tsk)
             did_put = True
         queue_lock.release()
-        # 2.3 Update/print stats        
+        # 2.3 Send commit 
+        queue_lock.acquire()
+        keys = done_db.keys()
+        keys.sort()
+        mk=None
+        contig=[]
+        for k in keys:
+            if(mk == None or (mk + 1 == k)):
+                contig.append(k)
+                mk = k
+            else:
+                break
+        contig.sort()
+        if(len(contig) > 0):
+            print 'Contiguous', contig
+            print 'Send commit', done_db[contig[-1]]
+            for k in contig:
+                del done_db[k]
+        queue_lock.release()
+        # 2.4 Update/print stats        
         stats_lock.acquire()
         cur_time=time.time()
         last_time=last_stats_print_time
