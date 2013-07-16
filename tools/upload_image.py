@@ -18,9 +18,9 @@ sid=s['sessionId']
 
 # Upload image
 ts=0
-for t in range(1,25):
-    #ts=str(int(time.time() * 1000))
-    ts=t*1000000000
+for t in range(1,10):
+    ts=str(int(time.time() * 1000))
+    #ts=t*1000000000
     blob=open('vid0.jpg','rb').read()
     img = g.upload_image(sid, username, camera, ts, 'image/jpeg', 'vid0.jpg', blob)
     print 'Image', img

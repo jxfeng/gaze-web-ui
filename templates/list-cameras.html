@@ -23,7 +23,7 @@
     <tr>
       <td>{{c.cameraId|e}}</td>
       <td>{{c.cameraLocation|e}}</td>
-      <td>Some time ago</td>
+      <td>{{dt[c.cameraId]|e}}</td>
       <td><a href="{{ url_for('view_camera', camera_id=c.cameraId) }}" class="btn btn-primary">Watch!</a></td>
     </tr>
     {% endfor %}

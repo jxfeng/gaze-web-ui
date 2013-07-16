@@ -16,7 +16,7 @@ import random
 import gaze
 
 # Global parameters
-GAZE_URL='http://localhost:8080/gaze-web-app' #'http://gazeapi.elasticbeanstalk.com'
+GAZE_URL='http://gazeapi.elasticbeanstalk.com' #'http://localhost:8080/gaze-web-app'
 NUM_THREADS = 25
 QUEUE_SIZE = NUM_THREADS * 5
 RAMP_FRAMES=25
@@ -213,6 +213,15 @@ def main(username=USERNAME, password=PASSWORD, camera=CAMERA, \
     last_stats_print_time=time.time()
     num_images=0
     main_gz=gaze.gaze(GAZE_URL)
+    s=None
+    sid=None
+    try:
+        s=main_gz.login(USERNAME, PASSWORD)
+        sid=s['sessionId']
+        x=1
+    except Exception as error:
+        print 'Could not login into system', error, s
+        return None
     # 1. Create threads
     for tid in range(0, NUM_THREADS):
         gz = gaze.gaze(GAZE_URL)
@@ -253,8 +262,9 @@ def main(username=USERNAME, password=PASSWORD, camera=CAMERA, \
                 break
         contig.sort()
         if(len(contig) > 0):
-            print 'Contiguous', contig
-            print 'Send commit', done_db[contig[-1]]
+            #print 'Contiguous', contig
+            #print 'Send commit', done_db[contig[-1]]
+            main_gz.commit_image(sid, USERNAME, CAMERA, done_db[contig[-1]])
             for k in contig:
                 del done_db[k]
         queue_lock.release()

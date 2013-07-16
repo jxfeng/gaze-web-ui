@@ -1,0 +1,43 @@
+{% extends "console-base.html" %}
+
+{% block consolecontent %}
+{% if stats==None %}
+<div class="alert alert-block">
+  <h4>Warning!</h4>
+  Could not get stats!
+</div>
+{% endif %}
+<!-- HAVE STATS -->
+{% if stats != None %}
+<div>
+  <h3>Statistics</h3>
+  <hr/>
+  <table class="table table-bordered table-striped">
+    <tr>
+      <td>Total Images</td><td>{{stats.totalImages|e}}</td>
+      <td>Total Bytes</td><td>{{stats.bytesUsedByVariation['ORIGINAL']|e}}</td>
+    </tr>
+  </table>
+  <h3>Cameras</h3>
+  <hr/>
+  <table class="table table-bordered table-striped">
+    <tr>
+      <th>Name</th>
+      <th>Num. Partitions</th>
+      <th>Total Images</th>
+      <th>Bytes used</th>
+    </tr>
+    {% for c in stats.cameraStats %}
+    <tr>
+      <td>{{c.cameraId|e}}</td>
+      <td>{{c.numShards|e}}</td>
+      <td>{{c.totalImages|e}}</td>
+      <td>{{c.bytesUsedByVariation['ORIGINAL']|e}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}
+
+

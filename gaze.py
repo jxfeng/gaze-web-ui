@@ -245,4 +245,13 @@ class gaze:
         assert(res != None and res['status'] == requests.codes.ok)
         content = res['response'].content
         return content
-        
+    def get_stats(self, session_id, user_id):
+        headers = {'Accepts': 'application/json','x-application-session-id': session_id}
+        ep = '/api/stats'
+        res = self.GET(ep, headers, None)
+        if(res == None or res['status'] != requests.codes.ok):
+            self.LOG('GET-STATS: FAILED: session_id: %(s)s user_id: %(u)s' % {'s':session_id, 'u':user_id})
+            return None
+        assert(res != None and res['status'] == requests.codes.ok)
+        s = res['json']
+        return s

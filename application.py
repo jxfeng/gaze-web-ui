@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import time
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, make_response
 from gaze import gaze
 
@@ -71,13 +72,27 @@ def list_cameras():
     if(start == 'None'):
         start = None
     cl = g.gaze_instance.list_cameras(session_id, user_id, start=start)
+    dt=dict()
+    for c in cl:
+        ts=0
+        if(c.has_key('lastImageTimestamp')):
+            ts = c['lastImageTimestamp']
+        dt[c['cameraId']] = str((int(time.time() * 1000) - ts)/1000) + ' seconds ago'
     prev = None
     if(start != None):
         prev = start
     next = None
     if(len(cl) > 0):
         next = cl[-1]['cameraId']
-    return render_template('list-cameras.html', menu=build_menu('console'), cameras=cl, prev=prev, next=next)
+    return render_template('list-cameras.html', menu=build_menu('console'), cameras=cl, dt=dt, prev=prev, next=next)
+
+@app.route('/stats')
+def get_all_stats():
+    session_id = session['gaze-session']['sessionId']
+    user_id = session['gaze-session']['userId']
+    stats = g.gaze_instance.get_stats(session_id, user_id)
+    print stats
+    return render_template('stats.html', menu=build_menu('console'), stats=stats)
 
 @app.route('/view-image/<camera_id>')
 def view_camera(camera_id):
